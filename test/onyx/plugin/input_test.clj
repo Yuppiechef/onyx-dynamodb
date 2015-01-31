@@ -112,6 +112,7 @@
 
 (far/delete-table client-opts :people)
 
-(fact (into #{} (map :names results))
+(fact (last results) => :done)
+(fact (into #{} (map :name (butlast results)))
       => #{"Dorrene" "Mike" "Benti" "Kristen" "Derek"})
 

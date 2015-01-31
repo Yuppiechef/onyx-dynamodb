@@ -56,7 +56,8 @@
 
 (defmethod p-ext/write-batch [:output :dynamodb]
   [{:keys [onyx.core/compressed onyx.core/task-map] :as pipeline}]
-  (far/batch-write-item
-   (:dynamodb/config task-map)
-   {(:dynamodb/table task-map) {:put compressed}})
+  (when-not (empty? compressed)
+    (far/batch-write-item
+     (:dynamodb/config task-map)
+     {(:dynamodb/table task-map) {:put compressed}}))
   {:onyx.core/written? true})
