@@ -5,36 +5,34 @@
    [onyx.peer.pipeline-extensions :as p-ext]
    [taoensso.timbre :refer [info]]))
 
-(defmethod p-ext/apply-fn [:input :dynamodb-scan]
-  [{:keys [onyx.core/task-map] :as pipeline}]
-  (let [total (:dynamodb/total-segments task-map)]
-    {:onyx.core/results
-     (map (fn [] {:segment % :total-segments total}) (range total))}))
-
 (defmethod l-ext/inject-lifecycle-resources
   :dynamodb/scan
   [_ {:keys [onyx.core/task-map]  :as pipeline}]
-  {:onyx.core/params
-   [{:last-prim-kvs (atom {})
-     :config (:dynamodb/config task-map)
-     :table (:dynamodb/table task-map)
-     :opts (:dynamodb/scan-options task-map)}]})
+  {:dynamodb/last-prim-kvs (atom false)})
 
 (defmethod p-ext/read-batch [:input :dynamodb-scan]
-  [{:keys [onyx.core/task-map :dynamodb/last-prim-kvs] :as pipeline} ]
-  (let [opts (:dynamodb/scan-options task-map)
-        last @last-prim-kvs
-        opts (if last (assoc opts :last-prim-kvs last) opts)
-        result
-        (far/scan
-         (:dynamodb/config task-map)
-         (:dynamodb/table task-map)
-         (assoc
-          opts
-          :limit (:onyx/batch-size task-map)
-          :total-segments (:onyx/total-segments task-map)))]
-    (reset! last-prim-kvs (-> result meta :last-prim-kvs))
-    result))
+  [{:keys [onyx.core/task-map onyx.core/task :dynamodb/last-prim-kvs] :as pipeline}]
+  (cond
+    (nil? @last-prim-kvs)
+    [:done] ;; <== What should this be?! ai.
+    :else
+    (let [opts (:dynamodb/scan-options task-map)
+          last @last-prim-kvs
+          opts (if last (assoc opts :last-prim-kvs last) opts)
+          result
+          (far/scan
+           (:dynamodb/config task-map)
+           (:dynamodb/table task-map)
+           (assoc opts :limit (:onyx/batch-size task-map)))
+          last-kv (-> result meta :last-prim-kvs)]
+      (info "Result: " result)
+      (reset! last-prim-kvs last-kv)
+      {:onyx.core/batch
+       (map (fn [r] {:input task :message r}) result)})))
+
+(defmethod p-ext/compress-batch [:input :dynamodb-scan]
+  [{:keys [onyx.core/decompressed] :as pipeline}]
+  {:onyx.core/compressed decompressed})
 
 (defmethod p-ext/apply-fn [:output :dynamodb]
   [_] {})

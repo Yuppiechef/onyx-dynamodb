@@ -70,32 +70,20 @@
 
 (hq-utils/create-queue! hq-config out-queue)
 
-(def workflow {:scan :persist})
+(def workflow [[:scan :persist]])
 
 (def catalog
-  [{:onyx/name :segment
-    :onyx/ident :dynamodb/segment
+  [{:onyx/name :scan
+    :onyx/ident :dynamodb/scan
     :onyx/type :input
     :onyx/medium :dynamodb-scan
-    :onyx/consumption :concurrent
-
-    ;; See the following link for total-segments consideration. The onyx/batch-size will be used as :limit
-    ;; http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/QueryAndScan.html#QueryAndScanParallelScan
-    :dynamodb/total-segments 3
-    :onyx/batch-size batch-size
-    :onyx/doc "Creates ranges over an :eavt index to parellelize loading datoms downstream"}
-   
-   {:onyx/name :scan
-    :onyx/ident :dynamodb/scan
-    :onyx/type :function
-    :onyx/fn :onyx.plugin.dynamodb/read-scan
     :onyx/consumption :concurrent
     :dynamodb/config client-opts
     :dynamodb/scan-options {:return :all-attributes}
     :dynamodb/table :people
     :onyx/batch-size batch-size
     :onyx/doc "Creates ranges over an :eavt index to parellelize loading datoms downstream"}
-
+   
    {:onyx/name :persist
     :onyx/ident :hornetq/write-segments
     :onyx/type :output
@@ -120,6 +108,8 @@
   (onyx.api/shutdown-peer v-peer))
 
 (onyx.api/shutdown-env env)
+
+(far/delete-table client-opts :people)
 
 (fact (into #{} (mapcat #(apply concat %) (map :names results)))
       => #{"Mike" "Benti" "Derek"})
