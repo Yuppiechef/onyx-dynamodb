@@ -82,6 +82,7 @@
     :dynamodb/scan-options {:return :all-attributes}
     :dynamodb/table :people
     :onyx/batch-size batch-size
+    :onyx/max-peers 1
     :onyx/doc "Creates ranges over an :eavt index to parellelize loading datoms downstream"}
    
    {:onyx/name :persist
@@ -111,6 +112,6 @@
 
 (far/delete-table client-opts :people)
 
-(fact (into #{} (mapcat #(apply concat %) (map :names results)))
-      => #{"Mike" "Benti" "Derek"})
+(fact (into #{} (map :names results))
+      => #{"Dorrene" "Mike" "Benti" "Kristen" "Derek"})
 

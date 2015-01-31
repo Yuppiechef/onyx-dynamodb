@@ -31,7 +31,7 @@
       (info "Result: " result)
       (reset! last-prim-kvs last-kv)
       {:onyx.core/batch
-       (map (fn [r] {:input task :message r}) (concat result [:done]))})))
+       (map (fn [r] {:input task :message r}) result)})))
 
 (defmethod p-ext/decompress-batch [:input :dynamodb-scan]
   [{:keys [onyx.core/batch] :as event}]
