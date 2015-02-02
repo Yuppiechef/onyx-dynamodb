@@ -1,6 +1,6 @@
-(defproject com.mdrogalis/onyx-dynamodb "0.5.0"
+(defproject yuppiechef/onyx-dynamodb "0.5.0"
   :description "Onyx plugin for DynamoDB"
-  :url "https://github.com/MichaelDrogalis/onyx-dynamodb"
+  :url "https://github.com/Yuppiechef/onyx-dynamodb"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]
