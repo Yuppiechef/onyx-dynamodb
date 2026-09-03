@@ -1,4 +1,4 @@
-## onyx-dynamodb
+## onyx-dynamodb (Archived)
 
 Onyx plugin providing read and write facilities for batch processing a DynamoDB database. This library uses the faraday dynamodb library under the hood : https://github.com/ptaoussanis/faraday/
 
